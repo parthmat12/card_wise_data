@@ -45,11 +45,11 @@ NEXUS LABS
             ├── KPIs
             └── Inspect Specs
 
-    UI Design Description
+UI Design Description
 
-
-    1. Overall Visual Style
+Overall Visual Style
 Theme: Futuristic AI / Enterprise SaaS
+
 Background: Very light white-to-lavender gradient with subtle pink/blue tones.
 Visual effect: Soft glowing particles and thin connecting lines in the background.
 Cards: White/light glass surfaces with subtle borders and shadows.
