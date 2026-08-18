@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="pastel">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master 3-Card UI Showcase | Autonomous Systems Hub</title>
+    <meta name="description"
+        content="State-of-the-art 3-Card Master UI featuring interactive tab switching, dynamic stem indicators, parameter sliders, pastel aesthetic, and modal deep-dives.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ==========================================
+       PASTEL DESIGN SYSTEM & CSS VARIABLES
+       ========================================== */
+        :root, [data-theme="pastel"] {
+            --font-heading: 'Outfit', -apple-system, sans-serif;
+            --font-body: 'Inter', -apple-system, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+
+            /* Pastel Theme Palette (Soft & Vibrant) */
+            --bg-gradient: linear-gradient(135deg, #fef9f2 0%, #eef2ff 35%, #fce7f3 70%, #e0f2fe 100%);
+            --bg-card: rgba(255, 255, 255, 0.88);
+            --bg-card-hover: rgba(255, 255, 255, 0.98);
+            --bg-glass: rgba(255, 255, 255, 0.78);
+            --bg-input: rgba(248, 250, 252, 0.95);
+
+            --border-color: rgba(199, 210, 254, 0.45);
+            --border-glow: #818cf8;
+            --border-container: rgba(165, 180, 252, 0.5);
+
+            --text-main: #1e1b4b;
+            --text-muted: #4338ca;
+            --text-dim: #6366f1;
+
+            /* Pastel Accents */
+            --primary: #818cf8;          /* Pastel Lavender */
+            --primary-hover: #6366f1;
+            --primary-glow: rgba(129, 140, 248, 0.35);
+            --secondary: #38bdf8;        /* Pastel Sky Blue */
+            --accent-emerald: #34d399;   /* Pastel Mint */
+            --accent-amber: #fbbf24;     /* Pastel Butter Yellow */
+            --accent-rose: #f472b6;      /* Pastel Pink */
+
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 22px;
+            --radius-xl: 30px;
+
+            --shadow-subtle: 0 14px 35px -10px rgba(99, 102, 241, 0.15);
+            --shadow-glow: 0 0 35px rgba(199, 210, 254, 0.6);
+
+            --transition-smooth: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        [data-theme="dark"] {
+            /* Midnight Pastel Dark Theme */
+            --bg-gradient: radial-gradient(ellipse at 50% 0%, #2e2640 0%, #1e1b2e 50%, #141221 100%);
+            --bg-card: rgba(35, 30, 54, 0.82);
+            --bg-card-hover: rgba(46, 40, 71, 0.95);
+            --bg-glass: rgba(28, 24, 44, 0.75);
+            --bg-input: rgba(22, 19, 36, 0.9);
+
+            --border-color: rgba(199, 210, 254, 0.2);
+            --border-glow: rgba(165, 180, 252, 0.5);
+            --border-container: rgba(165, 180, 252, 0.35);
+
+            --text-main: #f5f3ff;
+            --text-muted: #c7d2fe;
+            --text-dim: #a5b4fc;
+
+            --primary: #a5b4fc;
+            --primary-hover: #818cf8;
+            --primary-glow: rgba(165, 180, 252, 0.35);
+            --shadow-subtle: 0 14px 35px -10px rgba(0, 0, 0, 0.4);
+        }
+
+        /* GLOBAL RESET & BASE STYLES */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* BACKGROUND MESH CANVAS */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        /* APP CONTAINER */
+        .app-wrapper {
+            width: 100%;
+            max-width: 1240px;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            /* gap: 1.5rem; */
+        }
+
+        /* TOP HEADER & NAVBAR */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1fr solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            font-family: var(--font-heading);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .brand-title {
+            font-family: var(--font-heading);
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(90deg, var(--text-main), var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.55rem;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box input {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.55rem 1rem 0.55rem 2.4rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            outline: none;
+            transition: var(--transition-smooth);
+            width: 220px;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+            width: 260px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.8rem;
+            color: var(--text-muted);
+            pointer-events: none;
+            width: 16px;
+            height: 16px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-smooth);
+        }
+
+        .theme-toggle:hover {
+            background: var(--border-glow);
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        /* ==========================================
+       TOP 3 CARD TABS (SKETCH TOP BAR)
+       ========================================== */
+        .tabs-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 100%;
+        }
+
+        .tabs-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tab-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .tab-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: transparent;
+            transition: var(--transition-smooth);
+        }
+
+        .tab-card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .tab-card.active {
+            background: var(--bg-card-hover);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px -5px var(--primary-glow);
+        }
+
+        .tab-card.active::before {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .tab-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tab-icon-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .tab-icon-wrapper {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            background: rgba(99, 102, 241, 0.12);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .tab-card.active .tab-icon-wrapper {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .tab-title {
+            font-family: var(--font-heading);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .tab-tag {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-card.active .tab-tag {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+            border-color: var(--border-glow);
+        }
+
+        .tab-desc {
+            font-size: 0.825rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* ==========================================
+       DYNAMIC STEM CONNECTOR (MATCHING SKETCH STEM LINE)
+       ========================================== */
+        .stem-connector-container {
+            width: 100%;
+            height: 36px;
+            position: relative;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .stem-line {
+            position: absolute;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary) 0%, rgba(99, 102, 241, 0.6) 70%, var(--primary) 100%);
+            left: calc(16.666% - 1.5px);
+            transition: left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 12px var(--primary-glow), 0 0 3px var(--secondary);
+        }
+
+        /* Node dots on stem line */
+        .stem-line::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3.5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .stem-line::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: -3.5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--secondary);
+            box-shadow: 0 0 10px var(--secondary);
+        }
+
+        /* Positions for 3 tabs */
+        .tabs-section[data-active-tab="0"] .stem-line {
+            left: calc(16.666% - 1.5px);
+        }
+
+        .tabs-section[data-active-tab="1"] .stem-line {
+            left: calc(50% - 1.5px);
+        }
+
+        .tabs-section[data-active-tab="2"] .stem-line {
+            left: calc(83.333% - 1.5px);
+        }
+
+
+        /* ==========================================
+       MAIN CONTAINER (OUTER FRAME IN SKETCH)
+       ========================================== */
+        .main-container {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid var(--border-container);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            position: relative;
+            box-shadow: var(--shadow-subtle), 0 0 40px rgba(99, 102, 241, 0.1);
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: border-color 0.4s ease;
+        }
+
+        .main-container-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .container-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .container-title {
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .container-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .container-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.45rem 0.9rem;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: var(--primary);
+        }
+
+        /* ==========================================
+       3 CARDS GRID (INSIDE MAIN CONTAINER)
+       ========================================== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.75rem;
+            width: 100%;
+            perspective: 1000px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition-bounce);
+            position: relative;
+            backdrop-filter: blur(12px);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .card:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 0.25s;
+        }
+
+        @keyframes cardAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.01);
+            border-color: var(--border-glow);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6), 0 0 20px var(--primary-glow);
+        }
+
+        /* CARD HEADER IMAGE / CANVAS VISUAL */
+        .card-media-wrapper {
+            position: relative;
+            height: 180px;
+            width: 100%;
+            overflow: hidden;
+            background: #0f121e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-media-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .card:hover .card-media-img {
+            transform: scale(1.08);
+        }
+
+        .card-media-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(15, 18, 30, 0.95) 100%);
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
+
+        .badge-purple {
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+            color: #3730a3;
+            border: 1px solid #a5b4fc;
+        }
+
+        .badge-cyan {
+            background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+            color: #0369a1;
+            border: 1px solid #7dd3fc;
+        }
+
+        .badge-emerald {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #047857;
+            border: 1px solid #6ee7b7;
+        }
+
+        .badge-amber {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #b45309;
+            border: 1px solid #fcd34d;
+        }
+
+        .card-fav-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            z-index: 2;
+        }
+
+        .card-fav-btn:hover,
+        .card-fav-btn.active {
+            background: var(--accent-rose);
+            border-color: var(--accent-rose);
+            color: #fff;
+        }
+
+        /* CARD BODY CONTENT */
+        .card-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            flex-grow: 1;
+        }
+
+        .card-title-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .card-title {
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .card-subtitle {
+            font-size: 0.825rem;
+            color: var(--text-muted);
+        }
+
+        /* FEATURE LIST */
+        .card-features {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            list-style: none;
+        }
+
+        .feature-item {
+            font-size: 0.825rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-icon {
+            color: var(--accent-emerald);
+            font-weight: bold;
+        }
+
+        /* INTERACTIVE PARAMETER SLIDER IN CARD */
+        .card-interactive-box {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .slider-value {
+            color: var(--primary);
+            font-family: var(--font-mono);
+            font-weight: 700;
+        }
+
+        .custom-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            transition: background 0.3s;
+        }
+
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--primary-glow);
+            transition: transform 0.2s;
+        }
+
+        .custom-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+        }
+
+        /* METRICS STRIP */
+        .metrics-strip {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .metric-cell {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .metric-val {
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* CARD FOOTER BUTTONS */
+        .card-footer {
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 15px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--primary-glow);
+            filter: brightness(1.1);
+        }
+
+        .btn-icon-only {
+            width: 42px;
+            height: 42px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-icon-only:hover {
+            background: var(--border-glow);
+            border-color: var(--primary);
+        }
+
+        /* ==========================================
+       MODAL DIALOG FOR CARD DETAILS
+       ========================================== */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-xl);
+            width: 90%;
+            max-width: 650px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: var(--transition-bounce);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .modal-backdrop.open .modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .modal-close:hover {
+            color: #fff;
+            background: var(--accent-rose);
+            border-color: var(--accent-rose);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .modal-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .code-snippet-box {
+            background: #090b11;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: #a7f3d0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        /* TOAST NOTIFICATION */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            color: var(--text-main);
+            padding: 0.85rem 1.25rem;
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px var(--primary-glow);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: toastIn 0.3s ease forwards;
+        }
+
+        @keyframes toastIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* RESPONSIVE MEDIA QUERIES */
+        @media (max-width: 992px) {
+            .cards-grid {
+                grid-template-columns: repeat(1, 1fr);
+            }
+
+            .tabs-row {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.75rem;
+            }
+
+            .tab-card {
+                padding: 0.85rem;
+            }
+
+            .tab-desc {
+                display: none;
+            }
+
+            .search-box input {
+                width: 150px;
+            }
+
+            .search-box input:focus {
+                width: 180px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .header-actions {
+                justify-content: space-between;
+            }
+
+            .tab-title {
+                font-size: 0.85rem;
+            }
+
+            .tab-tag {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- BACKGROUND CANVAS FOR PARTICLES -->
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="app-wrapper">
+
+        <!-- TOP NAVBAR HEADER -->
+        <header class="header">
+            <div class="brand">
+                <div class="brand-icon">⚡</div>
+                <div>
+                    <span class="brand-title">NEXUS LABS</span>
+                    <span class="brand-badge">Master UI v3.4</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="search-box">
+                    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Filter cards..."
+                        oninput="handleSearch(this.value)">
+                </div>
+
+                <button class="btn-secondary" onclick="toggleViewMode()" title="Toggle Grid Layout">
+                    <span id="viewModeLabel">⚡ Dense</span>
+                </button>
+
+                <button class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()"
+                    title="Toggle Light/Dark Theme">
+                    🌙
+                </button>
+            </div>
+        </header>
+
+        <!-- TOP 3 CARD TABS (SKETCH LAYOUT TOP BAR) -->
+        <section class="tabs-section pt-2" id="tabsSection" data-active-tab="0" style="padding-top: 2%;">
+            <div class="tabs-row">
+
+                <!-- TAB 1 -->
+                <div class="tab-card active" onclick="switchTab(0)">
+                    <div class="tab-header-row">
+                        <div class="tab-icon-title">
+                            <div class="tab-icon-wrapper">🤖</div>
+                            <div class="tab-title">AI Agents</div>
+                        </div>
+                        <span class="tab-tag">3 Active</span>
+                    </div>
+                    <p class="tab-desc">Autonomous reasoning models & neural agent pipelines.</p>
+                </div>
+
+                <!-- TAB 2 -->
+                <div class="tab-card" onclick="switchTab(1)">
+                    <div class="tab-header-row">
+                        <div class="tab-icon-title">
+                            <div class="tab-icon-wrapper">☁️</div>
+                            <div class="tab-title">Quantum Grid</div>
+                        </div>
+                        <span class="tab-tag">High Perf</span>
+                    </div>
+                    <p class="tab-desc">Distributed GPU compute clusters & tensor processing.</p>
+                </div>
+
+                <!-- TAB 3 -->
+                <div class="tab-card" onclick="switchTab(2)">
+                    <div class="tab-header-row">
+                        <div class="tab-icon-title">
+                            <div class="tab-icon-wrapper">🛡️</div>
+                            <div class="tab-title">Security Vault</div>
+                        </div>
+                        <span class="tab-tag">Zero Trust</span>
+                    </div>
+                    <p class="tab-desc">Encrypted data enclaves & biometric identity defenses.</p>
+                </div>
+
+            </div>
+
+            <!-- DYNAMIC STEM CONNECTOR (Matches Wireframe Line connecting top tab to outer container) -->
+            <div class="stem-connector-container">
+                <div class="stem-line" id="stemLine"></div>
+            </div>
+        </section>
+
+        <!-- MAIN CONTAINER (OUTER BOX IN SKETCH) -->
+        <main class="main-container" id="mainContainer">
+            <div class="main-container-header">
+                <div class="container-title-group">
+                    <div class="container-title" id="categoryTitle">⚡ Featured AI Agent Swarm</div>
+                    <div class="container-subtitle" id="categorySubtitle">Select a card to inspect live telemetry &
+                        fine-tune parameters</div>
+                </div>
+
+                <div class="container-actions">
+                    <button class="btn-secondary" onclick="shuffleMetrics()">🔄 Refresh Live Telemetry</button>
+                    <button class="btn-secondary" onclick="exportConfig()">📥 Export Specs</button>
+                </div>
+            </div>
+
+            <!-- 3 CARDS GRID -->
+            <div class="cards-grid" id="cardsGrid">
+                <!-- Dynamically rendered via JS -->
+            </div>
+        </main>
+
+    </div>
+
+    <!-- MODAL DIALOG -->
+    <div class="modal-backdrop" id="modalBackdrop" onclick="closeModalOnOutside(event)">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+
+            <div class="modal-header">
+                <div class="modal-icon" id="modalIcon">🤖</div>
+                <div>
+                    <h2 style="font-family:var(--font-heading); font-size:1.4rem;" id="modalTitle">Card Details</h2>
+                    <p style="font-size:0.85rem; color:var(--text-muted);" id="modalCategory">Category Overview</p>
+                </div>
+            </div>
+
+            <p id="modalDescription" style="font-size:0.9rem; color:var(--text-muted); line-height:1.5;">
+                Detailed specifications, architectural topology, and real-time execution benchmarks.
+            </p>
+
+            <div>
+                <h4 style="font-size:0.85rem; margin-bottom:0.5rem; color:var(--primary);">API Integration Invocation:
+                </h4>
+                <div class="code-snippet-box" id="modalCodeSnippet">
+                    import { NexusEngine } from '@nexus/sdk';
+
+                    const node = await NexusEngine.connect({
+                    clusterId: "cluster-alpha-99",
+                    telemetry: true,
+                    autoScale: true
+                    });
+                </div>
+            </div>
+
+            <div style="display:flex; justify-shadow:space-between; gap:1rem; margin-top:0.5rem;">
+                <button class="btn-primary" onclick="launchInstanceFromModal()">🚀 Launch Instance Now</button>
+                <button class="btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        /* ==========================================
+           DATASETS FOR 3 TABS (3 CARDS EACH)
+           ========================================== */
+        const datasets = [
+            // CATEGORY 0: AI AGENTS
+            {
+                categoryName: "⚡ Autonomous AI Agent Swarms",
+                categorySubtitle: "Deploy self-healing reasoning models & high-throughput agent swarms.",
+                cards: [
+                    {
+                        id: 'ai-1',
+                        title: 'Neural Synthesizer v4',
+                        subtitle: 'Generative Reasoner',
+                        badge: 'POPULAR',
+                        badgeClass: 'badge-purple',
+                        img: 'assets/ai_nexus_card_1787033503088.png',
+                        icon: '🤖',
+                        features: ['128K Context Window', 'Multi-Modal Vision & Audio', '0.04s Ultra-low Latency'],
+                        sliderLabel: 'Model Parameters',
+                        sliderMin: 7, sliderMax: 70, sliderStep: 1, sliderDefault: 34, sliderUnit: 'B',
+                        metric1Label: 'Throughput', metric1Val: '1,420 t/s',
+                        metric2Label: 'Accuracy', metric2Val: '99.4%',
+                        code: `const agent = new NeuralSynthesizer({\n  model: "synth-v4-34b",\n  temperature: 0.2,\n  maxTokens: 4096\n});`
+                    },
+                    {
+                        id: 'ai-2',
+                        title: 'Omni-Agent Orchestrator',
+                        subtitle: 'Multi-Agent Consensus',
+                        badge: 'ENTERPRISE',
+                        badgeClass: 'badge-cyan',
+                        img: 'assets/cloud_compute_card_1787034014017.png',
+                        icon: '🧠',
+                        features: ['Autonomous Task Graph', 'Distributed Memory Sync', 'Zero-shot Tool Use'],
+                        sliderLabel: 'Swarm Worker Nodes',
+                        sliderMin: 2, sliderMax: 64, sliderStep: 2, sliderDefault: 16, sliderUnit: ' Nodes',
+                        metric1Label: 'Task Parallelism', metric1Val: '64x',
+                        metric2Label: 'Uptime', metric2Val: '99.99%',
+                        code: `const swarm = new AgentSwarm({\n  workers: 16,\n  consensusStrategy: "raft-fast"\n});`
+                    },
+                    {
+                        id: 'ai-3',
+                        title: 'Cognitive Vector Engine',
+                        subtitle: 'Semantic Knowledge Hub',
+                        badge: 'HIGH SPEED',
+                        badgeClass: 'badge-emerald',
+                        img: 'assets/ai_nexus_card_1787033503088.png',
+                        icon: '⚡',
+                        features: ['HNSW Indexing Engine', 'Sub-millisecond Search', 'Real-time Embedding Stream'],
+                        sliderLabel: 'Vector Memory Pool',
+                        sliderMin: 10, sliderMax: 500, sliderStep: 10, sliderDefault: 120, sliderUnit: 'GB',
+                        metric1Label: 'QPS Benchmark', metric1Val: '45,000',
+                        metric2Label: 'Recall Rate', metric2Val: '99.8%',
+                        code: `const vectorDb = new CognitiveVector({\n  dimensions: 1536,\n  indexType: "hnsw"\n});`
+                    }
+                ]
+            },
+
+            // CATEGORY 1: QUANTUM COMPUTE
+            {
+                categoryName: "☁️ Quantum Compute Infrastructure",
+                categorySubtitle: "High-density GPU clusters, Tensor networks & low-latency NVLink matrices.",
+                cards: [
+                    {
+                        id: 'qc-1',
+                        title: 'H100 Tensor Cluster',
+                        subtitle: 'NVIDIA SXM5 Array',
+                        badge: 'ULTRA HIGH',
+                        badgeClass: 'badge-cyan',
+                        img: 'assets/cloud_compute_card_1787034014017.png',
+                        icon: '💻',
+                        features: ['3.35 PFLOPS FP8 Compute', '900 GB/s NVLink Interconnect', 'Liquid Cooled Thermal Grid'],
+                        sliderLabel: 'Allocated VRAM',
+                        sliderMin: 80, sliderMax: 640, sliderStep: 80, sliderDefault: 320, sliderUnit: ' GB',
+                        metric1Label: 'Bandwidth', metric1Val: '3.2 TB/s',
+                        metric2Label: 'Efficiency', metric2Val: '96.2%',
+                        code: `const cluster = await QuantumGrid.provision({\n  gpuType: "H100-SXM5",\n  vram: "320GB",\n  interconnect: "NVLink-4"\n});`
+                    },
+                    {
+                        id: 'qc-2',
+                        title: 'TPU Matrix Mesh v5',
+                        subtitle: 'Tensor Processing Array',
+                        badge: 'STABLE',
+                        badgeClass: 'badge-purple',
+                        img: 'assets/ai_nexus_card_1787033503088.png',
+                        icon: '🔮',
+                        features: ['Optical Circuit Switching', '4,096 Core Topology', 'Direct Sparse Matrix Engine'],
+                        sliderLabel: 'Matrix Slices',
+                        sliderMin: 1, sliderMax: 16, sliderStep: 1, sliderDefault: 4, sliderUnit: ' Pods',
+                        metric1Label: 'FLOP Utilization', metric1Val: '88.5%',
+                        metric2Label: 'Power Draw', metric2Val: '1.2 kW',
+                        code: `const tpuMesh = new TPUMatrix({\n  pods: 4,\n  opticalRouting: true\n});`
+                    },
+                    {
+                        id: 'qc-3',
+                        title: 'Edge Inference Node',
+                        subtitle: 'Micro Tensor Engine',
+                        badge: 'LOW POWER',
+                        badgeClass: 'badge-amber',
+                        img: 'assets/cloud_compute_card_1787034014017.png',
+                        icon: '📡',
+                        features: ['5W Ultra Low Wattage', 'On-device INT4 Quantization', 'Sub-5ms End-to-End Latency'],
+                        sliderLabel: 'Power Limit',
+                        sliderMin: 5, sliderMax: 45, sliderStep: 5, sliderDefault: 15, sliderUnit: ' W',
+                        metric1Label: 'Latency', metric1Val: '4.2 ms',
+                        metric2Label: 'Thermal Temp', metric2Val: '42 °C',
+                        code: `const edge = new EdgeInferenceNode({\n  powerLimitWatts: 15,\n  quantization: "INT4"\n});`
+                    }
+                ]
+            },
+
+            // CATEGORY 2: SECURITY VAULT
+            {
+                categoryName: "🛡️ Enterprise Security & Shield Enclaves",
+                categorySubtitle: "Hardware-enforced zero-trust cryptographic vaults & real-time intrusion defense.",
+                cards: [
+                    {
+                        id: 'sec-1',
+                        title: 'Sentinel Cryptographic Vault',
+                        subtitle: 'Hardware Enclave',
+                        badge: 'ZERO TRUST',
+                        badgeClass: 'badge-emerald',
+                        img: 'assets/ai_nexus_card_1787033503088.png',
+                        icon: '🔒',
+                        features: ['FIPS 140-3 Level 4 Certified', 'AES-256 GCM Hardware Cipher', 'Real-time Key Rotation'],
+                        sliderLabel: 'Key Rotation Cycle',
+                        sliderMin: 1, sliderMax: 60, sliderStep: 1, sliderDefault: 15, sliderUnit: ' Mins',
+                        metric1Label: 'Threat Blocked', metric1Val: '100%',
+                        metric2Label: 'Audit Status', metric2Val: 'PASSED',
+                        code: `const vault = new SentinelVault({\n  securityLevel: "FIPS-140-3-L4",\n  autoRotateMins: 15\n});`
+                    },
+                    {
+                        id: 'sec-2',
+                        title: 'Zero-Knowledge Firewall',
+                        subtitle: 'Autonomous Network Shield',
+                        badge: 'AI DEFENSE',
+                        badgeClass: 'badge-purple',
+                        img: 'assets/cloud_compute_card_1787034014017.png',
+                        icon: '🛡️',
+                        features: ['Homomorphic Packet Inspection', 'Zero-Knowledge Proof Audit', 'DDoS Mitigation Swarm'],
+                        sliderLabel: 'Filter Sensitivity',
+                        sliderMin: 50, sliderMax: 99, sliderStep: 1, sliderDefault: 95, sliderUnit: ' %',
+                        metric1Label: 'Packet Scan', metric1Val: '10 Gbps',
+                        metric2Label: 'False Positive', metric2Val: '< 0.001%',
+                        code: `const firewall = new ZKFirewall({\n  zkProof: true,\n  sensitivity: 0.95\n});`
+                    },
+                    {
+                        id: 'sec-3',
+                        title: 'Biometric Telemetry Matrix',
+                        subtitle: 'Identity Enclave',
+                        badge: 'ENCRYPTED',
+                        badgeClass: 'badge-cyan',
+                        img: 'assets/ai_nexus_card_1787033503088.png',
+                        icon: '👁️',
+                        features: ['Multi-Factor Behavioral Auth', 'Continuous Trust Scoring', 'Quantum-Resistant Lattice'],
+                        sliderLabel: 'Trust Threshold',
+                        sliderMin: 80, sliderMax: 99, sliderStep: 1, sliderDefault: 92, sliderUnit: ' Score',
+                        metric1Label: 'Verification', metric1Val: '< 10 ms',
+                        metric2Label: 'Encryption', metric2Val: 'Kyber-1024',
+                        code: `const bioMatrix = new BiometricMatrix({\n  latticeEncryption: "Kyber-1024",\n  trustScoreCutoff: 92\n});`
+                    }
+                ]
+            }
+        ];
+
+        let currentTab = 0;
+        let favoriteCards = new Set();
+
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            initCanvas();
+            renderTabCards();
+        });
+
+        /* ==========================================
+           TAB SWITCHING & ANIMATION
+           ========================================== */
+        function switchTab(index) {
+            if (currentTab === index) return;
+
+            currentTab = index;
+
+            // Update Tabs DOM state
+            const tabsSection = document.getElementById('tabsSection');
+            tabsSection.setAttribute('data-active-tab', index);
+
+            const tabCards = document.querySelectorAll('.tab-card');
+            tabCards.forEach((card, idx) => {
+                if (idx === index) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+
+            // Render new cards
+            renderTabCards();
+
+            showToast(`Switched view to ${datasets[index].categoryName}`);
+        }
+
+        function renderTabCards() {
+            const data = datasets[currentTab];
+            const grid = document.getElementById('cardsGrid');
+
+            // Update Header Text
+            document.getElementById('categoryTitle').textContent = data.categoryName;
+            document.getElementById('categorySubtitle').textContent = data.categorySubtitle;
+
+            // Render Cards HTML
+            grid.innerHTML = data.cards.map((card, idx) => `
+        <div class="card" id="card-${card.id}">
+          <div class="card-media-wrapper">
+            <img src="${card.img}" alt="${card.title}" class="card-media-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'300\\' height=\\'180\\' viewBox=\\'0 0 300 180\\'><rect width=\\'300\\' height=\\'180\\' fill=\\'%23121624\\'/><circle cx=\\'150\\' cy=\\'90\\' r=\\'50\\' fill=\\'none\\' stroke=\\'%236366f1\\' stroke-width=\\'3\\'/><text x=\\'150\\' y=\\'95\\' fill=\\'%23fff\\' font-family=\\'sans-serif\\' font-size=\\'14\\' text-anchor=\\'middle\\'>NEXUS ENGINE</text></svg>'">
+            <div class="card-media-overlay"></div>
+            <span class="card-badge ${card.badgeClass}">${card.badge}</span>
+            <button class="card-fav-btn ${favoriteCards.has(card.id) ? 'active' : ''}" onclick="toggleFavorite(event, '${card.id}')" title="Save Card">
+              ♥
+            </button>
+          </div>
+
+          <div class="card-body">
+            <div class="card-title-row">
+              <h3 class="card-title">${card.title}</h3>
+              <span class="card-subtitle">${card.subtitle}</span>
+            </div>
+
+            <ul class="card-features">
+              ${card.features.map(f => `
+                <li class="feature-item">
+                  <span class="feature-icon">✓</span>
+                  <span>${f}</span>
+                </li>
+              `).join('')}
+            </ul>
+
+            <div class="card-interactive-box">
+              <div class="slider-header">
+                <span>${card.sliderLabel}</span>
+                <span class="slider-value" id="sliderVal-${card.id}">${card.sliderDefault}${card.sliderUnit}</span>
+              </div>
+              <input type="range" class="custom-slider" 
+                min="${card.sliderMin}" max="${card.sliderMax}" step="${card.sliderStep}" value="${card.sliderDefault}"
+                oninput="updateSliderVal('${card.id}', this.value, '${card.sliderUnit}')">
+            </div>
+
+            <div class="metrics-strip">
+              <div class="metric-cell">
+                <span class="metric-label">${card.metric1Label}</span>
+                <span class="metric-val" id="metric1-${card.id}">${card.metric1Val}</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-label">${card.metric2Label}</span>
+                <span class="metric-val" id="metric2-${card.id}">${card.metric2Val}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button class="btn-primary" onclick="openModal('${card.id}')">
+              <span>Inspect Specs</span>
+              <span>➔</span>
+            </button>
+            <button class="btn-icon-only" onclick="quickDeploy('${card.title}')" title="Quick Deploy">
+              🚀
+            </button>
+          </div>
+        </div>
+      `).join('');
+        }
+
+        /* ==========================================
+           INTERACTIVE CONTROLS & EVENT HANDLERS
+           ========================================== */
+        function updateSliderVal(id, val, unit) {
+            const display = document.getElementById(`sliderVal-${id}`);
+            if (display) {
+                display.textContent = val + unit;
+            }
+
+            // Dynamic metric scaling demo
+            const metric1 = document.getElementById(`metric1-${id}`);
+            if (metric1 && !isNaN(val)) {
+                const baseNum = parseInt(val);
+                metric1.textContent = (baseNum * 42).toLocaleString() + (id.startsWith('ai') ? ' t/s' : ' GB/s');
+            }
+        }
+
+        function toggleFavorite(event, id) {
+            event.stopPropagation();
+            const btn = event.currentTarget;
+            if (favoriteCards.has(id)) {
+                favoriteCards.delete(id);
+                btn.classList.remove('active');
+                showToast('Removed card from saved items');
+            } else {
+                favoriteCards.add(id);
+                btn.classList.add('active');
+                showToast('Card added to your saved matrix');
+            }
+        }
+
+        function handleSearch(query) {
+            const q = query.toLowerCase().trim();
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(q)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const btn = document.getElementById('themeToggleBtn');
+            const current = html.getAttribute('data-theme');
+            if (current === 'pastel' || current === 'light' || !current) {
+                html.setAttribute('data-theme', 'dark');
+                btn.textContent = '🌸';
+                showToast('Switched to Midnight Pastel Dark Mode');
+            } else {
+                html.setAttribute('data-theme', 'pastel');
+                btn.textContent = '🎨';
+                showToast('Switched to Pastel Light Mode');
+            }
+        }
+
+        let isDenseView = false;
+        function toggleViewMode() {
+            const grid = document.getElementById('cardsGrid');
+            const label = document.getElementById('viewModeLabel');
+            isDenseView = !isDenseView;
+            if (isDenseView) {
+                grid.style.gap = '1rem';
+                label.textContent = '📐 Spacious';
+                showToast('Dense grid view enabled');
+            } else {
+                grid.style.gap = '1.75rem';
+                label.textContent = '⚡ Dense';
+                showToast('Standard grid view enabled');
+            }
+        }
+
+        function shuffleMetrics() {
+            showToast('Live telemetry refreshed with latest benchmark values');
+            const activeData = datasets[currentTab].cards;
+            activeData.forEach(card => {
+                const metric1 = document.getElementById(`metric1-${card.id}`);
+                const metric2 = document.getElementById(`metric2-${card.id}`);
+                if (metric1) {
+                    const r = Math.floor(Math.random() * 500) + 1200;
+                    metric1.textContent = r.toLocaleString() + (card.id.startsWith('ai') ? ' t/s' : ' GB/s');
+                }
+                if (metric2) {
+                    metric2.textContent = (99.1 + Math.random() * 0.8).toFixed(2) + '%';
+                }
+            });
+        }
+
+        function exportConfig() {
+            showToast('Config matrix exported to JSON file');
+        }
+
+        function quickDeploy(title) {
+            showToast(`Initiating deployment cluster for: ${title}`);
+        }
+
+        /* ==========================================
+           MODAL LOGIC
+           ========================================== */
+        function openModal(cardId) {
+            const data = datasets[currentTab].cards.find(c => c.id === cardId);
+            if (!data) return;
+
+            document.getElementById('modalTitle').textContent = data.title;
+            document.getElementById('modalCategory').textContent = `${datasets[currentTab].categoryName} • ${data.subtitle}`;
+            document.getElementById('modalIcon').textContent = data.icon;
+            document.getElementById('modalCodeSnippet').textContent = data.code;
+
+            document.getElementById('modalBackdrop').classList.add('open');
+        }
+
+        function closeModal() {
+            document.getElementById('modalBackdrop').classList.remove('open');
+        }
+
+        function closeModalOnOutside(e) {
+            if (e.target.id === 'modalBackdrop') {
+                closeModal();
+            }
+        }
+
+        function launchInstanceFromModal() {
+            closeModal();
+            showToast('🚀 Launch signal dispatched to cluster orchestrator!');
+        }
+
+        /* ==========================================
+           TOAST NOTIFICATION LOGIC
+           ========================================== */
+        function showToast(msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span>⚡</span><span>${msg}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        /* ==========================================
+           CANVAS PARTICLES BACKGROUND EFFECT
+           ========================================== */
+        function initCanvas() {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            const pastelColors = ['rgba(129, 140, 248, 0.4)', 'rgba(56, 189, 248, 0.4)', 'rgba(244, 114, 182, 0.4)', 'rgba(52, 211, 153, 0.4)'];
+            const particles = Array.from({ length: 45 }, () => ({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                radius: Math.random() * 3 + 1.5,
+                color: pastelColors[Math.floor(Math.random() * pastelColors.length)]
+            }));
+
+            function render() {
+                ctx.clearRect(0, 0, width, height);
+
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                ctx.strokeStyle = isDark ? 'rgba(199, 210, 254, 0.08)' : 'rgba(129, 140, 248, 0.12)';
+
+                for (let i = 0; i < particles.length; i++) {
+                    let p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    if (p.x < 0 || p.x > width) p.vx *= -1;
+                    if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    for (let j = i + 1; j < particles.length; j++) {
+                        let p2 = particles[j];
+                        let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                        if (dist < 130) {
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                requestAnimationFrame(render);
+            }
+
+            render();
+        }
+    </script>
+</body>
+
+</html>
